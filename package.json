@@ -12,7 +12,8 @@
   ],
   "main": "index.js",
   "scripts": {
-    "test": "xo"
+    "test": "xo",
+    "dev": "node --inspect-brk ./bin/element-theme"
   },
   "xo": {
     "space": true,

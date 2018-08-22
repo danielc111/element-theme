@@ -2,3 +2,7 @@ node_modules
 .DS_Store
 npm-debug*
 .idea
+theme
+*.scss
+.vscode
+package-lock.json
