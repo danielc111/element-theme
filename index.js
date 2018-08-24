@@ -4,9 +4,9 @@ var task = require('./lib/task')
 var vars = require('./lib/gen-vars')
 var config = require('./lib/config')
 
-var build = function (opts) {
+var build = function (configPath, opts) {
   return function () {
-    return task.build(Object.assign(opts, {message: 'build element theme'}))
+    return task.build(configPath, Object.assign(opts, {message: 'build element theme ' + configPath}))
   }
 }
 
@@ -16,9 +16,25 @@ var fonts = function (opts) {
   }
 }
 
+var buildThemeVariables = function (opts) {
+  return function () {
+    return task.buildThemeVariables(Object.assign(opts, {message: 'build theme variables'}))
+  }
+}
+
 exports.init = function (filePath) {
   filePath = {}.toString.call(filePath) === '[object String]' ? filePath : ''
   vars.init(filePath)
+}
+
+function createBuildTasks(opts) {
+  var paths = (opts.config || config.config);
+  var tasks = [];
+  paths.forEach(function (path) {
+    gulp.task(path, build(path, opts))
+    tasks.push(path);
+  });
+  return tasks;
 }
 
 exports.watch = function (opts) {
@@ -28,10 +44,13 @@ exports.watch = function (opts) {
 }
 
 exports.run = function (opts, cb) {
-  gulp.task('build', build(opts))
+  var tasks = createBuildTasks(opts);
   gulp.task('fonts', fonts(opts))
+  gulp.task('buildThemeVariables', buildThemeVariables(opts))
+  tasks.push('fonts')
+  tasks.push('buildThemeVariables')
   if (typeof cb === 'function') {
-    return series('build', 'fonts', cb);
+    tasks.push(cb);
   }
-  return series('build', 'fonts');
+  return series(tasks);
 }
