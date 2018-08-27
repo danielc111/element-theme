@@ -1,12 +1,42 @@
 # element-theme
-[![Build Status](https://travis-ci.org/ElementUI/element-theme.svg?branch=master)](https://travis-ci.org/ElementUI/element-theme)
-[![npm](https://img.shields.io/npm/v/element-theme.svg)](https://www.npmjs.com/package/element-theme)
 
-> Theme generator cli tool for Element.
+> Dynamic Theme generator cli tool for Element. This is a fork of [element-theme](https://github.com/ElementUI/element-theme). The main goal of this fork is to provide the tooling to implement runtime theme changes for your application. The tool has been updated to build multiple themes in one pass and provide access to theme variables in your application.
 
-![](./media/element.gif)
+> The current version is compatible with element-ui@2.x.
 
-> The current version is compatible with element-ui@2.x. For element-ui@1.x, please check out the legacy branch.
+## Deviations from Original
+
+* The `--config` option now accepts multiple paths for your variables files.
+
+* The build process now has 3 goals:
+  * Generate static css for each provided variables file.
+  * Generate a copy of the variables file, `_variables.scss` with `:export` so that the theme's variables can be accessed in javascript.
+  * Generate a consolidated variables file named `_theme-variables.scss` with each variable prefixed by the theme name to avoid collisions.
+      * ie: `$--color-primary` becomes `$--[themeName]-color-primary`
+      * Exception - If theme name is `default`, then the variable name will not be modified.
+
+* New generated folder structure:
+  ```
+  theme
+  │   _theme-variables.scss
+  │
+  └───fonts
+  │   │   element-icons.ttf
+  │   │   element-icons.woff
+  │
+  └───themeName
+  │   │   _variables.scss
+  │   │   index.css
+  │   │   ...
+  │
+  └───themeName
+      │   _variables.scss
+      │   index.css
+      │   ...
+  ```
+
+## Theme Name
+  The theme name will be derived by the name of your variable files. So if you provide, `gotham.scss`, the theme name will be `gotham`. Use the name `default.scss` if you do not want its variables to be prefixed in `_theme-variables.scss`.
 
 ## Installation
 install local or global
@@ -26,29 +56,11 @@ npm i https://github.com/ElementUI/theme-chalk -D
 # init variables file
 et --init [file path]
 
-# watch then build
+# watch then build - actually I probably broke this, good luck :)
 et --watch [--config variable file path] [--out theme path]
 
-# build
-et [--config variable file path] [--out theme path] [--minimize]
-```
-
-## Node API
-```javascript
-var et = require('element-theme')
-
-// watch mode
-et.watch({
-  config: 'variables/path',
-  out: 'output/path'
-})
-
-// build
-et.run({
-  config: 'variables/path',
-  out: 'output/path',
-  minimize: true
-})
+# build - can receive multiple theme files
+et [--config variable file paths] [--out theme path] [--minimize]
 ```
 
 ## Options
@@ -84,6 +96,39 @@ You can configure some options in `element-theme` by putting it in package.json:
   }
 }
 ```
+
+## Using themes in your application
+
+  1. In HTML header, include all theme index.css files. Use javascript to enable only the active theme.
+      ```html
+      <head>
+        <!-- To set the active theme, use document.styleSheets[n].disabled = true|false; -->
+        <link rel="stylesheet" href="/theme/[themeName]/index.css">
+        <link rel="stylesheet" href="/theme/[themeName]/index.css">
+      </head>
+      ```
+  2. Access theme variables in javascript, import `/[themeName]/_variables.scss` to access the theme variables.
+      ```js
+        import defaultThemeVariables from '/theme/default/_variables.scss;
+
+        console.log(defaultThemeVariables.colorWhite); // prints #fff
+      ```
+  3. Access theme variables in SCSS, import `/_theme-variables` to get access to variables.
+      ```scss
+        @import '/theme/_theme-variables.scss';
+
+        #app {
+          background: $--background-color-base; // generated from default.scss config
+
+          // when this theme is active, give a parent element this class, such as <html>
+          .gotham & {
+            background: $--gotham-color-base; // generated from gotham.scss config
+          }
+        }
+      ```
+
+
+
 
 ## License
 MIT
