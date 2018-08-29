@@ -109,7 +109,7 @@ You can configure some options in `element-theme` by putting it in package.json:
       ```
   2. Access theme variables in javascript, import `/[themeName]/_variables.scss` to access the theme variables.
       ```js
-        import defaultThemeVariables from '/theme/default/_variables.scss;
+        import defaultThemeVariables from '/theme/default/_variables.scss';
 
         console.log(defaultThemeVariables.colorWhite); // prints #fff
       ```
