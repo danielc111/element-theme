@@ -3,6 +3,5 @@ node_modules
 npm-debug*
 .idea
 theme
-*.scss
 .vscode
 package-lock.json
